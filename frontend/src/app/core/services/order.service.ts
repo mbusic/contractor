@@ -46,7 +46,7 @@ export class OrderService {
     return this.http.delete(`${API}/orders/${orderId}/photos/${photoId}`);
   }
 
-  documentUrl(id: number, type: 'quote' | 'workorder' | 'report' | 'invoice') {
-    return `${API}/orders/${id}/documents/${type}`;
+  getDocument(id: number, type: 'quote' | 'workorder' | 'report' | 'invoice') {
+    return this.http.get(`${API}/orders/${id}/documents/${type}`, { responseType: 'text' });
   }
 }

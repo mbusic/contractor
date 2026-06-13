@@ -391,7 +391,13 @@ export class OrderDetailComponent implements OnInit {
   }
 
   openDoc(type: 'quote' | 'workorder' | 'report' | 'invoice') {
-    window.open(this.orderSvc.documentUrl(this.order!.id, type), '_blank');
+    this.orderSvc.getDocument(this.order!.id, type).subscribe(html => {
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, '_blank');
+      // revoke after the tab has loaded
+      if (win) win.addEventListener('load', () => URL.revokeObjectURL(url), { once: true });
+    });
   }
 
   variance(est: number | null, act: number | null): string {

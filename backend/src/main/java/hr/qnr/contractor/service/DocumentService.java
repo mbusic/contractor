@@ -13,159 +13,208 @@ public class DocumentService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
 
+    // -------------------------------------------------------------------------
+    // Public document generators
+    // -------------------------------------------------------------------------
+
     public String generateQuote(Order o) {
-        String today = LocalDate.now().format(DATE_FMT);
-        return html("PONUDA", o, """
+        String today = today();
+        String body = """
                 <table class="info">
-                  <tr><th>Broj naloga:</th><td>%s</td></tr>
-                  <tr><th>Datum:</th><td>%s</td></tr>
-                  <tr><th>Poslovnica:</th><td>%s</td></tr>
-                  <tr><th>Klijent:</th><td>%s</td></tr>
-                  <tr><th>Lokacija:</th><td>%s</td></tr>
-                  <tr><th>Kontakt osoba:</th><td>%s</td></tr>
-                  <tr><th>Telefon:</th><td>%s</td></tr>
+                  <tr><th>Broj naloga</th><td>%s</td></tr>
+                  <tr><th>Datum</th><td>%s</td></tr>
+                  <tr><th>Poslovnica</th><td>%s</td></tr>
+                  <tr><th>Klijent</th><td>%s</td></tr>
+                  <tr><th>Lokacija</th><td>%s</td></tr>
+                  <tr><th>Kontakt osoba</th><td>%s</td></tr>
+                  <tr><th>Telefon</th><td>%s</td></tr>
+                  <tr><th>Hitnost</th><td>%s</td></tr>
                 </table>
+
                 <h3>Opis radova</h3>
-                <p>%s</p>
+                <p class="description">%s</p>
+
                 <h3>Procijenjeni troškovi</h3>
                 %s
+
                 <div class="signature-block">
-                  <p>Datum: %s</p>
-                  <p>Potpis ovlaštene osobe:</p>
-                  <p class="sig-line">___________________________</p>
+                  <div class="sig-row">
+                    <div>
+                      <p class="sig-label">Mjesto i datum:</p>
+                      <p class="sig-line">_______________________</p>
+                    </div>
+                    <div>
+                      <p class="sig-label">Potpis i pečat:</p>
+                      <p class="sig-line">_______________________</p>
+                    </div>
+                  </div>
                 </div>
                 """.formatted(
-                o.getOrderNumber(), today,
-                branchName(o), clientName(o), str(o.getLocation()),
-                str(o.getContactPerson()), str(o.getPhone()),
-                str(o.getDescription()),
-                costTable(
-                        o.getEstimatedKm(), o.getEstimatedWorkHours(),
+                o.getOrderNumber(), today, branch(o), client(o),
+                s(o.getLocation()), s(o.getContactPerson()), s(o.getPhone()), s(o.getUrgency()),
+                s(o.getDescription()),
+                costTable(o.getEstimatedKm(), o.getEstimatedWorkHours(),
                         o.getEstimatedNumberOfWorkers(), o.getEstimatedTotalHours(),
-                        o.getEstimatedMaterialCost()),
-                today));
+                        o.getEstimatedMaterialCost()));
+        return page("PONUDA", o.getOrderNumber(), body);
     }
 
     public String generateWorkOrder(Order o) {
-        String photoHtml = o.getPhotos().isEmpty() ? "<p><em>Nema fotografija</em></p>" :
-                o.getPhotos().stream()
-                        .map(p -> "<img src=\"http://localhost:8080" + p.getUrl() + "\" class=\"thumb\">")
-                        .reduce("", String::concat);
-
-        return html("RADNI NALOG", o, """
+        String photos = photoGrid(o);
+        String body = """
                 <table class="info">
-                  <tr><th>Broj naloga:</th><td>%s</td></tr>
-                  <tr><th>Poslovnica:</th><td>%s</td></tr>
-                  <tr><th>Lokacija:</th><td>%s</td></tr>
-                  <tr><th>Kontakt osoba:</th><td>%s</td></tr>
-                  <tr><th>Telefon:</th><td>%s</td></tr>
-                  <tr><th>Hitnost:</th><td>%s</td></tr>
-                  <tr><th>Serviser:</th><td>%s</td></tr>
+                  <tr><th>Broj naloga</th><td>%s</td></tr>
+                  <tr><th>Datum</th><td>%s</td></tr>
+                  <tr><th>Poslovnica</th><td>%s</td></tr>
+                  <tr><th>Lokacija</th><td>%s</td></tr>
+                  <tr><th>Kontakt osoba</th><td>%s</td></tr>
+                  <tr><th>Telefon</th><td>%s</td></tr>
+                  <tr><th>Hitnost</th><td>%s</td></tr>
+                  <tr><th>Dodijeljeni serviser</th><td>%s</td></tr>
                 </table>
+
                 <h3>Opis radova</h3>
-                <p>%s</p>
+                <p class="description">%s</p>
+
                 <h3>Fotografije</h3>
-                <div class="photos">%s</div>
+                %s
+
                 <h3>Bilješke na terenu</h3>
-                <div class="blank-field"></div>
-                <div class="blank-field"></div>
-                <h3>Troškovi (za popunjavanje na terenu)</h3>
-                <table class="field-table">
+                <div class="field-box"></div>
+                <div class="field-box"></div>
+
+                <h3>Troškovi (popunjava serviser)</h3>
+                <table class="cost">
                   <tr><th>Radni sati</th><td></td></tr>
                   <tr><th>Broj radnika</th><td></td></tr>
                   <tr><th>Ukupno sati</th><td></td></tr>
                   <tr><th>Kilometri</th><td></td></tr>
                   <tr><th>Materijal (EUR)</th><td></td></tr>
                 </table>
+
                 <div class="signature-block">
-                  <p>Potpis servisera:</p>
-                  <p class="sig-line">___________________________</p>
+                  <div class="sig-row">
+                    <div>
+                      <p class="sig-label">Datum i potpis servisera:</p>
+                      <p class="sig-line">_______________________</p>
+                    </div>
+                    <div>
+                      <p class="sig-label">Potpis naručitelja:</p>
+                      <p class="sig-line">_______________________</p>
+                    </div>
+                  </div>
                 </div>
                 """.formatted(
-                o.getOrderNumber(), branchName(o), str(o.getLocation()),
-                str(o.getContactPerson()), str(o.getPhone()), str(o.getUrgency()),
+                o.getOrderNumber(), today(), branch(o), s(o.getLocation()),
+                s(o.getContactPerson()), s(o.getPhone()), s(o.getUrgency()),
                 o.getAssignedServicer() != null ? o.getAssignedServicer().getDisplayName() : "-",
-                str(o.getDescription()), photoHtml));
+                s(o.getDescription()), photos);
+        return page("RADNI NALOG", o.getOrderNumber(), body);
     }
 
     public String generateReport(Order o) {
-        String notesHtml = o.getNotes().isEmpty() ? "<p><em>Nema bilješki</em></p>" :
-                o.getNotes().stream()
-                        .map(n -> "<p><strong>" + n.getAuthorName() + ":</strong> " + n.getText() + "</p>")
+        String notes = o.getNotes().isEmpty()
+                ? "<p><em>Nema bilješki.</em></p>"
+                : o.getNotes().stream()
+                        .map(n -> "<div class=\"note\"><span class=\"note-author\">" + n.getAuthorName()
+                                + "</span> &mdash; " + n.getText() + "</div>")
                         .reduce("", String::concat);
+        String photos = photoGrid(o);
 
-        String photoHtml = o.getPhotos().isEmpty() ? "<p><em>Nema fotografija</em></p>" :
-                o.getPhotos().stream()
-                        .map(p -> "<img src=\"http://localhost:8080" + p.getUrl() + "\" class=\"thumb\">")
-                        .reduce("", String::concat);
-
-        return html("IZVJEŠTAJ O RADOVIMA", o, """
+        String body = """
                 <table class="info">
-                  <tr><th>Broj naloga:</th><td>%s</td></tr>
-                  <tr><th>Poslovnica:</th><td>%s</td></tr>
-                  <tr><th>Klijent:</th><td>%s</td></tr>
-                  <tr><th>Lokacija:</th><td>%s</td></tr>
-                  <tr><th>Serviser:</th><td>%s</td></tr>
-                  <tr><th>Status:</th><td>%s</td></tr>
+                  <tr><th>Broj naloga</th><td>%s</td></tr>
+                  <tr><th>Datum</th><td>%s</td></tr>
+                  <tr><th>Poslovnica</th><td>%s</td></tr>
+                  <tr><th>Klijent</th><td>%s</td></tr>
+                  <tr><th>Lokacija</th><td>%s</td></tr>
+                  <tr><th>Serviser</th><td>%s</td></tr>
+                  <tr><th>Status</th><td>%s</td></tr>
                 </table>
+
                 <h3>Opis radova</h3>
-                <p>%s</p>
+                <p class="description">%s</p>
+
                 <h3>Bilješke</h3>
                 %s
+
                 <h3>Stvarni troškovi</h3>
                 %s
+
                 <h3>Fotografije</h3>
-                <div class="photos">%s</div>
+                %s
+
                 <div class="signature-block">
-                  <p>Potpis ovlaštene osobe:</p>
-                  <p class="sig-line">___________________________</p>
+                  <div class="sig-row">
+                    <div>
+                      <p class="sig-label">Mjesto i datum:</p>
+                      <p class="sig-line">_______________________</p>
+                    </div>
+                    <div>
+                      <p class="sig-label">Potpis ovlaštene osobe:</p>
+                      <p class="sig-line">_______________________</p>
+                    </div>
+                  </div>
                 </div>
                 """.formatted(
-                o.getOrderNumber(), branchName(o), clientName(o), str(o.getLocation()),
+                o.getOrderNumber(), today(), branch(o), client(o), s(o.getLocation()),
                 o.getAssignedServicer() != null ? o.getAssignedServicer().getDisplayName() : "-",
-                o.getStatus().name(),
-                str(o.getDescription()),
-                notesHtml,
+                statusLabel(o.getStatus()),
+                s(o.getDescription()), notes,
                 costTable(o.getActualKm(), o.getActualWorkHours(),
                         o.getActualNumberOfWorkers(), o.getActualTotalHours(),
                         o.getActualMaterialCost()),
-                photoHtml));
+                photos);
+        return page("IZVJEŠTAJ O RADOVIMA", o.getOrderNumber(), body);
     }
 
     public String generateInvoice(Order o) {
-        String today = LocalDate.now().format(DATE_FMT);
         String created = o.getCreatedAt() != null
-                ? o.getCreatedAt().atZone(ZoneId.systemDefault()).format(DATE_FMT) : today;
+                ? o.getCreatedAt().atZone(ZoneId.systemDefault()).format(DATE_FMT) : today();
 
-        return html("RAČUN", o, """
+        String body = """
                 <table class="info">
-                  <tr><th>Broj naloga:</th><td>%s</td></tr>
-                  <tr><th>Datum naloga:</th><td>%s</td></tr>
-                  <tr><th>Datum računa:</th><td>%s</td></tr>
-                  <tr><th>Poslovnica:</th><td>%s</td></tr>
-                  <tr><th>Klijent:</th><td>%s</td></tr>
-                  <tr><th>Lokacija:</th><td>%s</td></tr>
+                  <tr><th>Broj naloga</th><td>%s</td></tr>
+                  <tr><th>Datum naloga</th><td>%s</td></tr>
+                  <tr><th>Datum računa</th><td>%s</td></tr>
+                  <tr><th>Poslovnica</th><td>%s</td></tr>
+                  <tr><th>Klijent</th><td>%s</td></tr>
+                  <tr><th>Lokacija</th><td>%s</td></tr>
                 </table>
+
                 <h3>Obračun troškova</h3>
                 %s
-                <p class="vat-placeholder">[ Ovdje ide prikaz PDV-a i zakonski obvezni podaci za račun ]</p>
+
+                <div class="vat-box">
+                  ⚠ Ovdje se upisuju zakonski obvezni podaci o PDV-u, OIB-u i broju računa.
+                  (Placeholder – nije implementirano u POC verziji.)
+                </div>
+
                 <div class="signature-block">
-                  <p>Datum: %s</p>
-                  <p>Potpis i pečat:</p>
-                  <p class="sig-line">___________________________</p>
+                  <div class="sig-row">
+                    <div>
+                      <p class="sig-label">Mjesto i datum:</p>
+                      <p class="sig-line">_______________________</p>
+                    </div>
+                    <div>
+                      <p class="sig-label">Potpis i pečat:</p>
+                      <p class="sig-line">_______________________</p>
+                    </div>
+                  </div>
                 </div>
                 """.formatted(
-                o.getOrderNumber(), created, today,
-                branchName(o), clientName(o), str(o.getLocation()),
+                o.getOrderNumber(), created, today(), branch(o), client(o), s(o.getLocation()),
                 costTable(o.getActualKm(), o.getActualWorkHours(),
                         o.getActualNumberOfWorkers(), o.getActualTotalHours(),
-                        o.getActualMaterialCost()),
-                today));
+                        o.getActualMaterialCost()));
+        return page("RAČUN", o.getOrderNumber(), body);
     }
 
-    // --- helpers ---
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
 
-    private String html(String title, Order o, String body) {
+    private String page(String title, String orderNumber, String body) {
         return """
                 <!DOCTYPE html>
                 <html lang="hr">
@@ -173,63 +222,118 @@ public class DocumentService {
                   <meta charset="UTF-8">
                   <title>%s – %s</title>
                   <style>
-                    body { font-family: Arial, sans-serif; font-size: 14px; margin: 40px; color: #222; }
-                    h1 { color: #2e7d32; border-bottom: 2px solid #2e7d32; padding-bottom: 6px; }
-                    h3 { margin-top: 24px; color: #333; }
-                    table.info { border-collapse: collapse; width: 100%%; margin-bottom: 16px; }
-                    table.info th { text-align: left; width: 160px; padding: 4px 8px; background: #f5f5f5; }
-                    table.info td { padding: 4px 8px; }
-                    table.cost, table.field-table { border-collapse: collapse; width: 100%%; }
-                    table.cost th, table.cost td,
-                    table.field-table th, table.field-table td {
-                      border: 1px solid #ccc; padding: 6px 12px; }
-                    table.cost th, table.field-table th { background: #e8f5e9; }
-                    table.field-table td { width: 200px; height: 28px; }
-                    .photos img.thumb { width: 150px; height: 110px; object-fit: cover;
-                      margin: 4px; border: 1px solid #ccc; border-radius: 4px; }
-                    .blank-field { border-bottom: 1px solid #999; height: 32px; margin: 8px 0; }
+                    *, *::before, *::after { box-sizing: border-box; }
+                    body {
+                      font-family: Arial, Helvetica, sans-serif;
+                      font-size: 13px; color: #222; margin: 0; padding: 32px 40px;
+                    }
+                    h1 {
+                      color: #2e7d32; border-bottom: 2px solid #2e7d32;
+                      padding-bottom: 6px; margin: 0 0 20px; font-size: 1.5rem;
+                    }
+                    h3 { margin: 20px 0 6px; font-size: .95rem; color: #444; }
+                    p  { margin: 4px 0; }
+
+                    table.info { border-collapse: collapse; width: 100%%; margin-bottom: 4px; }
+                    table.info th {
+                      text-align: left; width: 170px; padding: 5px 10px;
+                      background: #f1f8e9; font-weight: 600; border: 1px solid #ddd;
+                    }
+                    table.info td { padding: 5px 10px; border: 1px solid #ddd; }
+
+                    table.cost { border-collapse: collapse; width: 100%%; }
+                    table.cost th, table.cost td {
+                      border: 1px solid #ccc; padding: 6px 12px; font-size: .88rem;
+                    }
+                    table.cost th { background: #e8f5e9; text-align: left; width: 200px; }
+                    table.cost td { text-align: right; }
+
+                    .description { white-space: pre-wrap; background: #fafafa;
+                      border-left: 3px solid #2e7d32; padding: 8px 12px; border-radius: 0 4px 4px 0; }
+
+                    .photos { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+                    .photos img { width: 150px; height: 110px; object-fit: cover;
+                      border: 1px solid #ccc; border-radius: 4px; }
+
+                    .note { margin: 6px 0; padding: 6px 10px;
+                      border-left: 3px solid #a5d6a7; background: #f9fbe7; }
+                    .note-author { font-weight: 600; }
+
+                    .field-box { border: 1px solid #bbb; border-radius: 4px;
+                      height: 60px; margin-bottom: 8px; }
+
                     .signature-block { margin-top: 48px; }
-                    .sig-line { margin-top: 40px; }
-                    .vat-placeholder { border: 1px dashed #f57c00; padding: 12px; color: #e65100;
-                      background: #fff8e1; border-radius: 4px; }
-                    @media print { body { margin: 20px; } }
+                    .sig-row { display: flex; gap: 80px; }
+                    .sig-label { font-size: .85rem; color: #666; margin-bottom: 32px; }
+                    .sig-line { border-top: 1px solid #555; width: 220px; padding-top: 4px;
+                      font-size: .8rem; color: #888; }
+
+                    .vat-box { border: 2px dashed #f57c00; padding: 14px 16px;
+                      background: #fff8e1; color: #e65100; border-radius: 4px;
+                      margin: 12px 0; font-size: .9rem; }
+
+                    .print-btn {
+                      position: fixed; top: 16px; right: 16px;
+                      background: #2e7d32; color: white; border: none;
+                      padding: 9px 22px; border-radius: 4px; cursor: pointer;
+                      font-size: .9rem; font-weight: 600; box-shadow: 0 2px 6px rgba(0,0,0,.2);
+                    }
+                    .print-btn:hover { background: #1b5e20; }
+
+                    @page  { margin: 18mm 20mm; }
+                    @media print {
+                      body { padding: 0; }
+                      .print-btn { display: none; }
+                    }
                   </style>
                 </head>
                 <body>
+                  <button class="print-btn" onclick="window.print()">Ispis / PDF</button>
                   <h1>%s</h1>
                   %s
                 </body>
                 </html>
-                """.formatted(title, o.getOrderNumber(), title, body);
+                """.formatted(title, orderNumber, title, body);
     }
 
     private String costTable(Integer km, Double workH, Integer workers, Double totalH, BigDecimal material) {
         return """
                 <table class="cost">
-                  <tr><th>Stavka</th><th>Vrijednost</th></tr>
-                  <tr><td>Kilometri</td><td>%s km</td></tr>
-                  <tr><td>Radni sati</td><td>%s h</td></tr>
-                  <tr><td>Broj radnika</td><td>%s</td></tr>
-                  <tr><td>Ukupno sati</td><td>%s h</td></tr>
-                  <tr><td>Materijal</td><td>%s EUR</td></tr>
+                  <tr><th>Radni sati</th><td>%s</td></tr>
+                  <tr><th>Broj radnika</th><td>%s</td></tr>
+                  <tr><th>Ukupno sati</th><td>%s</td></tr>
+                  <tr><th>Kilometri</th><td>%s km</td></tr>
+                  <tr><th>Materijal</th><td>%s EUR</td></tr>
                 </table>
                 """.formatted(
-                km != null ? km : "-",
                 workH != null ? workH : "-",
                 workers != null ? workers : "-",
                 totalH != null ? totalH : "-",
+                km != null ? km : "-",
                 material != null ? material : "-");
     }
 
-    private String branchName(Order o) {
-        return o.getBranch() != null ? o.getBranch().getName() : "-";
+    private String photoGrid(Order o) {
+        if (o.getPhotos().isEmpty()) return "<p><em>Nema fotografija.</em></p>";
+        StringBuilder sb = new StringBuilder("<div class=\"photos\">");
+        o.getPhotos().forEach(p ->
+                sb.append("<img src=\"http://localhost:8080").append(p.getUrl()).append("\" alt=\"foto\">"));
+        sb.append("</div>");
+        return sb.toString();
     }
 
-    private String clientName(Order o) {
-        return o.getClient() != null ? o.getClient().getName() : "-";
+    private String statusLabel(Order.Status s) {
+        return switch (s) {
+            case DRAFT      -> "Nacrt";
+            case PENDING    -> "Na čekanju";
+            case IN_PROGRESS -> "U tijeku";
+            case RESOLVED   -> "Riješen";
+            case CANCELLED  -> "Otkazan";
+        };
     }
 
-    private String str(String s) {
-        return s != null ? s : "-";
-    }
+    private String branch(Order o) { return o.getBranch() != null ? o.getBranch().getName() : "-"; }
+    private String client(Order o) { return o.getClient() != null ? o.getClient().getName() : "-"; }
+    private String s(String v)     { return v != null ? v : "-"; }
+    private String today()         { return LocalDate.now().format(DATE_FMT); }
 }
