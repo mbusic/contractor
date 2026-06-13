@@ -65,6 +65,10 @@ export interface OrderSummary {
   status: OrderStatus;
   clientName: string | null;
   location: string | null;
+  createdAt: string;
+  actualKm: number | null;
+  actualTotalHours: number | null;
+  actualNumberOfWorkers: number | null;
 }
 
 export interface Order {

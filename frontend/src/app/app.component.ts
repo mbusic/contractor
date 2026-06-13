@@ -11,7 +11,9 @@ import { CommonModule } from '@angular/common';
     <nav class="navbar" *ngIf="isLoggedIn()">
       <div class="navbar-brand">Kricco</div>
       <div class="navbar-links">
+        <a routerLink="/servicer" *ngIf="isServicer()">Početna</a>
         <a routerLink="/orders">Nalozi</a>
+        <a routerLink="/timesheet" *ngIf="isServicer()">Tablica sati</a>
         <a routerLink="/admin" *ngIf="isAdmin()">Admin</a>
       </div>
       <div class="navbar-user">
@@ -26,13 +28,12 @@ import { CommonModule } from '@angular/common';
   styleUrl: './app.component.scss',
 })
 export class AppComponent {
-  isLoggedIn = computed(() => !!this.auth.currentUser());
-  isAdmin = computed(() => this.auth.hasRole('ADMIN'));
-  userName = computed(() => this.auth.currentUser()?.displayName ?? '');
+  isLoggedIn  = computed(() => !!this.auth.currentUser());
+  isAdmin     = computed(() => this.auth.hasRole('ADMIN'));
+  isServicer  = computed(() => this.auth.hasRole('SERVICER'));
+  userName    = computed(() => this.auth.currentUser()?.displayName ?? '');
 
   constructor(private auth: AuthService, private router: Router) {}
 
-  logout() {
-    this.auth.logout();
-  }
+  logout() { this.auth.logout(); }
 }

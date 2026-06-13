@@ -8,6 +8,16 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login.component').then(m => m.LoginComponent),
   },
   {
+    path: 'servicer',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/servicer/servicer-home.component').then(m => m.ServicerHomeComponent),
+  },
+  {
+    path: 'timesheet',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/servicer/timesheet.component').then(m => m.TimesheetComponent),
+  },
+  {
     path: 'orders',
     canActivate: [authGuard],
     loadComponent: () => import('./features/orders/order-list.component').then(m => m.OrderListComponent),

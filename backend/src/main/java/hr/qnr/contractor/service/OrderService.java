@@ -182,7 +182,11 @@ public class OrderService {
                 o.getUrgency(),
                 o.getStatus().name(),
                 o.getClient() != null ? o.getClient().getName() : null,
-                o.getLocation()
+                o.getLocation(),
+                o.getCreatedAt(),
+                o.getActualKm(),
+                o.getActualTotalHours(),
+                o.getActualNumberOfWorkers()
         );
     }
 

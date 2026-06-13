@@ -68,7 +68,10 @@ export class LoginComponent {
     this.loading = true;
     this.error = '';
     this.auth.login(this.username, this.password).subscribe({
-      next: () => this.router.navigate(['/orders']),
+      next: (user) => {
+        const dest = user.role === 'SERVICER' ? '/servicer' : '/orders';
+        this.router.navigate([dest]);
+      },
       error: () => {
         this.error = 'Pogrešno korisničko ime ili lozinka.';
         this.loading = false;
