@@ -1,0 +1,30 @@
+# Maven build output
+backend/target/
+
+# H2 database files
+backend/data/
+
+# Uploaded photos
+backend/uploads/
+
+# Angular build output
+frontend/dist/
+frontend/.angular/
+
+# Node modules
+frontend/node_modules/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env / secrets
+.env
+*.env.local
