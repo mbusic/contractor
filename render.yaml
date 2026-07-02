@@ -5,45 +5,22 @@ databases:
     plan: free
 
 services:
-  # Backend - Spring Boot, built and run with Render's native Java runtime (no Docker)
+  # Backend - Spring Boot. Render has no native Java runtime (confirmed against
+  # https://render.com/docs/native-runtimes), so this runs via Docker - the only
+  # option Render offers for a JVM app. See backend/Dockerfile for the build/run
+  # steps and the JVM memory-flag reasoning.
   - type: web
     name: contractor-backend
-    env: java
+    runtime: docker
     plan: free
-    rootDir: backend
-    buildCommand: mvn clean package -DskipTests
-    # -Xmx256m: caps heap at half of the free tier's 512MB, leaving room for metaspace,
-    #   thread stacks and other off-heap/native memory so the JVM doesn't get OOM-killed.
-    # -Xss256k: each thread (Tomcat request threads, HikariCP) gets a smaller stack than
-    #   the 1MB default; this app has no deep recursion so it's safe and saves memory
-    #   as concurrent threads grow.
-    # -XX:MaxMetaspaceSize=96m: bounds class-metadata memory, which otherwise grows
-    #   unpredictably and is a common cause of small-container OOMs.
-    # -XX:+UseSerialGC: the free tier is single-core; the serial collector has lower
-    #   memory/CPU overhead than G1 (the default) for small heaps on one core.
-    startCommand: java -Xmx256m -Xss256k -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC -jar target/*.jar --spring.profiles.active=render
+    dockerfilePath: backend/Dockerfile
+    dockerContext: backend
     healthCheckPath: /api/health
     envVars:
-      - key: DB_HOST
+      - key: DATABASE_URL
         fromDatabase:
           name: contractor-db
-          property: host
-      - key: DB_PORT
-        fromDatabase:
-          name: contractor-db
-          property: port
-      - key: DB_NAME
-        fromDatabase:
-          name: contractor-db
-          property: database
-      - key: DB_USER
-        fromDatabase:
-          name: contractor-db
-          property: user
-      - key: DB_PASSWORD
-        fromDatabase:
-          name: contractor-db
-          property: password
+          property: connectionString
       - key: APP_JWT_SECRET
         generateValue: true
       # Placeholders - update these in the Render dashboard once both services
@@ -56,7 +33,7 @@ services:
   # Frontend - Angular static build
   - type: web
     name: contractor-frontend
-    env: static
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npx @angular/cli@19 build --configuration production
     staticPublishPath: dist/frontend/browser
