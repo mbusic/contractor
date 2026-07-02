@@ -23,9 +23,12 @@ public class RenderDataSourceConfig {
     public DataSource dataSource(@Value("${DATABASE_URL}") String databaseUrl) throws Exception {
         URI uri = new URI(databaseUrl);
         String[] userInfo = uri.getUserInfo().split(":", 2);
+        // Render's internal connectionString omits the port (implied 5432 on their
+        // private network), so URI.getPort() comes back -1 - fall back explicitly.
+        int port = uri.getPort() != -1 ? uri.getPort() : 5432;
 
         HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:postgresql://" + uri.getHost() + ":" + uri.getPort() + uri.getPath());
+        config.setJdbcUrl("jdbc:postgresql://" + uri.getHost() + ":" + port + uri.getPath());
         config.setUsername(userInfo[0]);
         config.setPassword(userInfo[1]);
         config.setDriverClassName("org.postgresql.Driver");
