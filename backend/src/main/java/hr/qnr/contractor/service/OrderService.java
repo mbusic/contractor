@@ -201,7 +201,7 @@ public class OrderService {
         if (o.getClient() != null) {
             Client c = o.getClient();
             List<LocationDto> locs = c.getLocations().stream()
-                    .map(l -> new LocationDto(l.getId(), l.getAddress(), l.getCity()))
+                    .map(l -> new LocationDto(l.getId(), l.getName(), l.getAddress(), l.getCity()))
                     .toList();
             clientDto = new ClientDto(c.getId(), c.getType().name(), c.getName(),
                     c.getContactPerson(), c.getPhone(), c.getEmail(), c.getAddress(), locs);

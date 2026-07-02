@@ -19,6 +19,7 @@ export interface Branch {
 
 export interface Location {
   id: number;
+  name: string | null;
   address: string;
   city: string;
 }

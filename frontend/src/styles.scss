@@ -30,11 +30,11 @@ h3 { margin: 20px 0 8px; font-size: 1rem; color: #444; }
   font-weight: 500;
   text-decoration: none;
 
-  &-primary   { background: #2e7d32; color: white; &:hover { background: #1b5e20; } }
-  &-secondary { background: #e0e0e0; color: #333;  &:hover { background: #bdbdbd; } }
+  &-primary   { background: #1565c0; color: white; &:hover { background: #0d47a1; } }
+  &-secondary { background: #1e88e5; color: white;  &:hover { background: #1565c0; } }
   &-danger    { background: #c62828; color: white; &:hover { background: #b71c1c; } }
-  &-outline   { background: transparent; color: #2e7d32; border: 1px solid #2e7d32;
-                &:hover { background: #e8f5e9; } }
+  &-outline   { background: transparent; color: #1565c0; border: 1px solid #1565c0;
+                &:hover { background: #e3f2fd; } }
   &-sm { padding: 4px 10px; font-size: 0.8rem; }
 }
 
@@ -50,7 +50,7 @@ h3 { margin: 20px 0 8px; font-size: 1rem; color: #444; }
     border: 1px solid #ccc;
     border-radius: 4px;
     font-size: 0.9rem;
-    &:focus { outline: none; border-color: #2e7d32; }
+    &:focus { outline: none; border-color: #1565c0; }
   }
   textarea { resize: vertical; min-height: 80px; }
 }
@@ -60,7 +60,7 @@ h3 { margin: 20px 0 8px; font-size: 1rem; color: #444; }
   width: 100%;
   border-collapse: collapse;
 
-  th { background: #2e7d32; color: white; padding: 10px 12px; text-align: left; font-size: 0.85rem; }
+  th { background: #1565c0; color: white; padding: 10px 12px; text-align: left; font-size: 0.85rem; }
   td { padding: 9px 12px; border-bottom: 1px solid #eee; font-size: 0.875rem; }
   tr:hover td { background: #f9f9f9; }
   tr:last-child td { border-bottom: none; }
@@ -110,7 +110,7 @@ h3 { margin: 20px 0 8px; font-size: 1rem; color: #444; }
   border-collapse: collapse;
 
   th, td { border: 1px solid #e0e0e0; padding: 8px 12px; font-size: 0.875rem; }
-  th { background: #e8f5e9; font-weight: 600; }
+  th { background: #e3f2fd; font-weight: 600; }
   td { text-align: right; }
   td:first-child { text-align: left; }
   .variance-pos { color: #c62828; }

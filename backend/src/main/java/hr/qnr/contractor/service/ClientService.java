@@ -2,9 +2,12 @@ package hr.qnr.contractor.service;
 
 import hr.qnr.contractor.dto.ClientCreateRequest;
 import hr.qnr.contractor.dto.ClientDto;
+import hr.qnr.contractor.dto.LocationCreateRequest;
 import hr.qnr.contractor.dto.LocationDto;
 import hr.qnr.contractor.entity.Client;
+import hr.qnr.contractor.entity.Location;
 import hr.qnr.contractor.repository.ClientRepository;
+import hr.qnr.contractor.repository.LocationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -18,6 +21,7 @@ import java.util.List;
 public class ClientService {
 
     private final ClientRepository clientRepo;
+    private final LocationRepository locationRepo;
 
     @Transactional(readOnly = true)
     public List<ClientDto> getAll() {
@@ -59,9 +63,33 @@ public class ClientService {
         clientRepo.deleteById(id);
     }
 
+    @Transactional
+    public ClientDto addLocation(Long clientId, LocationCreateRequest req) {
+        Client c = clientRepo.findById(clientId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        Location loc = Location.builder()
+                .client(c)
+                .name(req.name())
+                .address(req.address())
+                .city(req.city())
+                .build();
+        locationRepo.save(loc);
+        return toDto(clientRepo.findById(clientId).get());
+    }
+
+    @Transactional
+    public void deleteLocation(Long clientId, Long locationId) {
+        Location loc = locationRepo.findById(locationId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+        if (!loc.getClient().getId().equals(clientId)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
+        locationRepo.delete(loc);
+    }
+
     ClientDto toDto(Client c) {
         List<LocationDto> locs = c.getLocations().stream()
-                .map(l -> new LocationDto(l.getId(), l.getAddress(), l.getCity()))
+                .map(l -> new LocationDto(l.getId(), l.getName(), l.getAddress(), l.getCity()))
                 .toList();
         return new ClientDto(c.getId(), c.getType().name(), c.getName(),
                 c.getContactPerson(), c.getPhone(), c.getEmail(), c.getAddress(), locs);

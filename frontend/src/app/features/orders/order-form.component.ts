@@ -43,7 +43,7 @@ const URGENCY_OPTIONS = ['Isti dan', '1 dan', '1 tjedan', '1 mjesec', '6 mjeseci
           <select *ngIf="clientLocations.length > 0; else locationInput" [(ngModel)]="form.location">
             <option value="">-- odaberi lokaciju --</option>
             <option *ngFor="let l of clientLocations" [value]="l.address + ', ' + l.city">
-              {{ l.address }}, {{ l.city }}
+              {{ l.name ? l.name + ' – ' : '' }}{{ l.address }}, {{ l.city }}
             </option>
           </select>
           <ng-template #locationInput>

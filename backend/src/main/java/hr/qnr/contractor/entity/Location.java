@@ -16,6 +16,7 @@ public class Location {
     @JoinColumn(name = "client_id", nullable = false)
     private Client client;
 
+    private String name;
     private String address;
     private String city;
 }

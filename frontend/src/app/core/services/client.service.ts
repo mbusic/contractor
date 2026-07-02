@@ -13,4 +13,10 @@ export class ClientService {
   create(c: any) { return this.http.post<Client>(`${API}/clients`, c); }
   update(id: number, c: any) { return this.http.put<Client>(`${API}/clients/${id}`, c); }
   delete(id: number) { return this.http.delete(`${API}/clients/${id}`); }
+  addLocation(clientId: number, loc: { name: string; address: string; city: string }) {
+    return this.http.post<Client>(`${API}/clients/${clientId}/locations`, loc);
+  }
+  deleteLocation(clientId: number, locationId: number) {
+    return this.http.delete(`${API}/clients/${clientId}/locations/${locationId}`);
+  }
 }

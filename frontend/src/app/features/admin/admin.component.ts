@@ -93,13 +93,42 @@ type Tab = 'users' | 'branches' | 'clients';
         <button type="button" class="btn btn-secondary btn-sm" (click)="editingClient=false">Odustani</button>
       </form>
       <table class="table" style="margin-top:8px">
-        <thead><tr><th>Naziv</th><th>Tip</th><th>Kontakt</th><th>Telefon</th><th></th></tr></thead>
+        <thead><tr><th>Naziv</th><th>Tip</th><th>Kontakt</th><th>Telefon</th><th>Lokacije</th><th></th></tr></thead>
         <tbody>
-          <tr *ngFor="let c of clients">
-            <td>{{ c.name }}</td><td>{{ c.type }}</td>
-            <td>{{ c.contactPerson }}</td><td>{{ c.phone }}</td>
-            <td><button class="btn btn-danger btn-sm" (click)="deleteClient(c.id)">Izbriši</button></td>
-          </tr>
+          <ng-container *ngFor="let c of clients">
+            <tr>
+              <td>{{ c.name }}</td><td>{{ c.type }}</td>
+              <td>{{ c.contactPerson }}</td><td>{{ c.phone }}</td>
+              <td>
+                <button class="btn btn-secondary btn-sm" (click)="toggleLocations(c.id)">
+                  Lokacije ({{ c.locations.length }})
+                </button>
+              </td>
+              <td><button class="btn btn-danger btn-sm" (click)="deleteClient(c.id)">Izbriši</button></td>
+            </tr>
+            <tr *ngIf="expandedClientId === c.id">
+              <td colspan="6" class="locations-panel">
+                <table class="table locations-table" *ngIf="c.locations.length > 0">
+                  <thead><tr><th>Naziv</th><th>Adresa</th><th>Grad</th><th></th></tr></thead>
+                  <tbody>
+                    <tr *ngFor="let l of c.locations">
+                      <td>{{ l.name || '-' }}</td>
+                      <td>{{ l.address }}</td>
+                      <td>{{ l.city }}</td>
+                      <td><button class="btn btn-danger btn-sm" (click)="deleteLocation(c.id, l.id)">Izbriši</button></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p *ngIf="c.locations.length === 0" style="margin:4px 0 8px;color:#666;font-size:.85rem">Nema lokacija.</p>
+                <form class="inline-form" (ngSubmit)="saveLocation(c.id)">
+                  <input [(ngModel)]="locationForm.name" name="loc-name" placeholder="Naziv (npr. Sjedište)" />
+                  <input [(ngModel)]="locationForm.address" name="loc-address" placeholder="Adresa" required />
+                  <input [(ngModel)]="locationForm.city" name="loc-city" placeholder="Grad" required />
+                  <button type="submit" class="btn btn-primary btn-sm">Dodaj lokaciju</button>
+                </form>
+              </td>
+            </tr>
+          </ng-container>
         </tbody>
       </table>
     </div>
@@ -107,9 +136,11 @@ type Tab = 'users' | 'branches' | 'clients';
   styles: [`
     .tab-bar { display:flex; gap:4px; margin-bottom:16px;
       button { padding:7px 18px; border:1px solid #ccc; background:white; border-radius:4px 4px 0 0; cursor:pointer;
-        &.active { background:#2e7d32; color:white; border-color:#2e7d32; } } }
+        &.active { background:#1565c0; color:white; border-color:#1565c0; } } }
     .inline-form { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;
       input, select { padding:6px 10px; border:1px solid #ccc; border-radius:4px; font-size:.875rem; } }
+    .locations-panel { background:#f9f9f9; padding:12px 16px; }
+    .locations-table { margin-bottom:10px; }
   `],
 })
 export class AdminComponent implements OnInit {
@@ -122,9 +153,12 @@ export class AdminComponent implements OnInit {
   editingBranch = false;
   editingClient = false;
 
+  expandedClientId: number | null = null;
+
   userForm: any = { username: '', password: '', role: 'OFFICE', displayName: '' };
   branchForm: any = { name: '', city: '' };
   clientForm: any = { type: 'COMPANY', name: '', contactPerson: '', phone: '', email: '' };
+  locationForm: any = { name: '', address: '', city: '' };
 
   constructor(
     private userSvc: UserService,
@@ -152,5 +186,25 @@ export class AdminComponent implements OnInit {
 
   deleteUser(id: number)   { if (confirm('Izbrisati?')) this.userSvc.delete(id).subscribe(() => this.loadAll()); }
   deleteBranch(id: number) { if (confirm('Izbrisati?')) this.branchSvc.delete(id).subscribe(() => this.loadAll()); }
-  deleteClient(id: number) { if (confirm('Izbrisati?')) this.clientSvc.delete(id).subscribe(() => this.loadAll()); }
+  deleteClient(id: number) { if (confirm('Izbrisati?')) this.clientSvc.delete(id).subscribe(() => { if (this.expandedClientId === id) this.expandedClientId = null; this.loadAll(); }); }
+
+  toggleLocations(clientId: number) {
+    this.expandedClientId = this.expandedClientId === clientId ? null : clientId;
+    this.locationForm = { name: '', address: '', city: '' };
+  }
+
+  saveLocation(clientId: number) {
+    this.clientSvc.addLocation(clientId, this.locationForm).subscribe(updated => {
+      this.clients = this.clients.map(c => c.id === clientId ? updated : c);
+      this.locationForm = { name: '', address: '', city: '' };
+    });
+  }
+
+  deleteLocation(clientId: number, locationId: number) {
+    if (confirm('Izbrisati lokaciju?')) {
+      this.clientSvc.deleteLocation(clientId, locationId).subscribe(() => {
+        this.clientSvc.list().subscribe(c => this.clients = c);
+      });
+    }
+  }
 }
