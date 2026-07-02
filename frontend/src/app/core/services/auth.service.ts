@@ -3,8 +3,9 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { tap } from 'rxjs';
 import { AuthUser } from '../models/models';
+import { environment } from '../../../environments/environment';
 
-const API = 'http://localhost:8080/api';
+const API = `${environment.apiUrl}`;
 const STORAGE_KEY = 'auth_user';
 
 @Injectable({ providedIn: 'root' })

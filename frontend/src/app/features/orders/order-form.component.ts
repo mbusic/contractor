@@ -6,7 +6,7 @@ import { OrderService } from '../../core/services/order.service';
 import { BranchService } from '../../core/services/branch.service';
 import { ClientService } from '../../core/services/client.service';
 import { AuthService } from '../../core/services/auth.service';
-import { Branch, Client } from '../../core/models/models';
+import { Branch, Client, Location } from '../../core/models/models';
 
 const URGENCY_OPTIONS = ['Isti dan', '1 dan', '1 tjedan', '1 mjesec', '6 mjeseci'];
 
@@ -92,7 +92,7 @@ const URGENCY_OPTIONS = ['Isti dan', '1 dan', '1 tjedan', '1 mjesec', '6 mjeseci
 export class OrderFormComponent implements OnInit {
   branches: Branch[] = [];
   clients: Client[] = [];
-  clientLocations: { address: string; city: string }[] = [];
+  clientLocations: Location[] = [];
   urgencyOptions = URGENCY_OPTIONS;
   saving = false;
   error = '';

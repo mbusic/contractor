@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Branch } from '../models/models';
+import { environment } from '../../../environments/environment';
 
-const API = 'http://localhost:8080/api';
+const API = `${environment.apiUrl}`;
 
 @Injectable({ providedIn: 'root' })
 export class BranchService {

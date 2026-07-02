@@ -1,6 +1,7 @@
 package hr.qnr.contractor.service;
 
 import hr.qnr.contractor.entity.Order;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -12,6 +13,9 @@ import java.time.format.DateTimeFormatter;
 public class DocumentService {
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("dd.MM.yyyy");
+
+    @Value("${app.base-url}")
+    private String baseUrl;
 
     // -------------------------------------------------------------------------
     // Public document generators
@@ -317,7 +321,7 @@ public class DocumentService {
         if (o.getPhotos().isEmpty()) return "<p><em>Nema fotografija.</em></p>";
         StringBuilder sb = new StringBuilder("<div class=\"photos\">");
         o.getPhotos().forEach(p ->
-                sb.append("<img src=\"http://localhost:8080").append(p.getUrl()).append("\" alt=\"foto\">"));
+                sb.append("<img src=\"").append(baseUrl).append(p.getUrl()).append("\" alt=\"foto\">"));
         sb.append("</div>");
         return sb.toString();
     }

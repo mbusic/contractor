@@ -1,0 +1,68 @@
+databases:
+  - name: contractor-db
+    databaseName: contractor
+    user: contractor
+    plan: free
+
+services:
+  # Backend - Spring Boot, built and run with Render's native Java runtime (no Docker)
+  - type: web
+    name: contractor-backend
+    env: java
+    plan: free
+    rootDir: backend
+    buildCommand: mvn clean package -DskipTests
+    # -Xmx256m: caps heap at half of the free tier's 512MB, leaving room for metaspace,
+    #   thread stacks and other off-heap/native memory so the JVM doesn't get OOM-killed.
+    # -Xss256k: each thread (Tomcat request threads, HikariCP) gets a smaller stack than
+    #   the 1MB default; this app has no deep recursion so it's safe and saves memory
+    #   as concurrent threads grow.
+    # -XX:MaxMetaspaceSize=96m: bounds class-metadata memory, which otherwise grows
+    #   unpredictably and is a common cause of small-container OOMs.
+    # -XX:+UseSerialGC: the free tier is single-core; the serial collector has lower
+    #   memory/CPU overhead than G1 (the default) for small heaps on one core.
+    startCommand: java -Xmx256m -Xss256k -XX:MaxMetaspaceSize=96m -XX:+UseSerialGC -jar target/*.jar --spring.profiles.active=render
+    healthCheckPath: /api/health
+    envVars:
+      - key: DB_HOST
+        fromDatabase:
+          name: contractor-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: contractor-db
+          property: port
+      - key: DB_NAME
+        fromDatabase:
+          name: contractor-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: contractor-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: contractor-db
+          property: password
+      - key: APP_JWT_SECRET
+        generateValue: true
+      # Placeholders - update these in the Render dashboard once both services
+      # have their real *.onrender.com URLs (see DEPLOY.md).
+      - key: APP_CORS_ORIGIN
+        value: https://REPLACE-WITH-YOUR-FRONTEND.onrender.com
+      - key: APP_BASE_URL
+        value: https://REPLACE-WITH-YOUR-BACKEND.onrender.com
+
+  # Frontend - Angular static build
+  - type: web
+    name: contractor-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npx @angular/cli@19 build --configuration production
+    staticPublishPath: dist/frontend/browser
+    routes:
+      # Angular client-side routing: serve index.html for any path that isn't a
+      # real static file, so refreshing on e.g. /orders/12 doesn't 404.
+      - type: rewrite
+        source: /*
+        destination: /index.html

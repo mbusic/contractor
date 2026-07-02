@@ -8,6 +8,7 @@ import { BranchService } from '../../core/services/branch.service';
 import { ClientService } from '../../core/services/client.service';
 import { AuthService } from '../../core/services/auth.service';
 import { Order, UserDto, Branch, Client } from '../../core/models/models';
+import { environment } from '../../../environments/environment';
 
 const STATUS_HR: Record<string, string> = {
   DRAFT: 'Nacrt', PENDING: 'Na čekanju',
@@ -219,7 +220,7 @@ const ALL_STATUSES = ['DRAFT', 'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'
         <h3>Fotografije</h3>
         <div class="photo-grid">
           <div class="photo-thumb" *ngFor="let p of order.photos">
-            <img [src]="'http://localhost:8080' + p.url" [alt]="'Fotografija'" />
+            <img [src]="fileBaseUrl + p.url" [alt]="'Fotografija'" />
             <button class="photo-delete" *ngIf="canEditPhotos()" (click)="deletePhoto(p.id)">×</button>
           </div>
           <div *ngIf="order.photos.length === 0" style="color:#888">Nema fotografija.</div>
@@ -273,6 +274,7 @@ const ALL_STATUSES = ['DRAFT', 'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'
   `],
 })
 export class OrderDetailComponent implements OnInit {
+  fileBaseUrl = environment.fileBaseUrl;
   order: Order | null = null;
   loading = true;
   editing = false;
