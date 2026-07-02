@@ -55,8 +55,9 @@ These come from `render.yaml` and don't need manual entry:
 | `APP_CORS_ORIGIN` | contractor-backend | The frontend's `*.onrender.com` URL |
 | `APP_BASE_URL` | contractor-backend | The backend's own `*.onrender.com` URL |
 
-(Both are pre-filled with `REPLACE-WITH-...` placeholders in `render.yaml` - the blueprint
-apply will use those literal strings until you override them.)
+These are now filled in in `render.yaml` with this deploy's real URLs
+(`contractor-frontend-wgfq.onrender.com` / `contractor-backend-o4uk.onrender.com`) - only
+re-check them here if either service ever gets recreated with a different generated hostname.
 
 ## Known limitations of this deploy (POC, not fixed by this pass)
 

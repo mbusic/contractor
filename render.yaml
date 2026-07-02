@@ -23,12 +23,10 @@ services:
           property: connectionString
       - key: APP_JWT_SECRET
         generateValue: true
-      # Placeholders - update these in the Render dashboard once both services
-      # have their real *.onrender.com URLs (see DEPLOY.md).
       - key: APP_CORS_ORIGIN
-        value: https://REPLACE-WITH-YOUR-FRONTEND.onrender.com
+        value: https://contractor-frontend-wgfq.onrender.com
       - key: APP_BASE_URL
-        value: https://REPLACE-WITH-YOUR-BACKEND.onrender.com
+        value: https://contractor-backend-o4uk.onrender.com
 
   # Frontend - Angular static build
   - type: web
