@@ -155,7 +155,11 @@ const ALL_STATUSES = ['DRAFT', 'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'
           <tbody>
             <tr>
               <td>Radni sati</td>
-              <td>{{ order.estimatedWorkHours ?? '-' }}</td>
+
+              <td>
+                <span *ngIf="!editingCost || !isOffice()">{{ order.estimatedWorkHours ?? '-' }}</span>
+                <input *ngIf="editingCost && isOffice()" [(ngModel)]="cost.estimatedWorkHours" type="number" style="width:80px" />
+              </td>
               <td><span *ngIf="!editingCost">{{ order.actualWorkHours ?? '-' }}</span>
                   <input *ngIf="editingCost" [(ngModel)]="cost.actualWorkHours" type="number" style="width:80px" /></td>
               <td [class]="varianceClass(order.estimatedWorkHours, order.actualWorkHours)">
@@ -163,7 +167,10 @@ const ALL_STATUSES = ['DRAFT', 'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'
             </tr>
             <tr>
               <td>Broj radnika</td>
-              <td>{{ order.estimatedNumberOfWorkers ?? '-' }}</td>
+              <td>
+                <span *ngIf="!editingCost || !isOffice()">{{ order.estimatedNumberOfWorkers ?? '-' }}</span>
+                <input *ngIf="editingCost && isOffice()" [(ngModel)]="cost.estimatedNumberOfWorkers" type="number" style="width:80px" />
+              </td>
               <td><span *ngIf="!editingCost">{{ order.actualNumberOfWorkers ?? '-' }}</span>
                   <input *ngIf="editingCost" [(ngModel)]="cost.actualNumberOfWorkers" type="number" style="width:80px" /></td>
               <td [class]="varianceClass(order.estimatedNumberOfWorkers, order.actualNumberOfWorkers)">
@@ -171,7 +178,10 @@ const ALL_STATUSES = ['DRAFT', 'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'
             </tr>
             <tr>
               <td>Ukupno sati</td>
-              <td>{{ order.estimatedTotalHours ?? '-' }}</td>
+              <td>
+                <span *ngIf="!editingCost || !isOffice()">{{ order.estimatedTotalHours ?? '-' }}</span>
+                <input *ngIf="editingCost && isOffice()" [(ngModel)]="cost.estimatedTotalHours" type="number" style="width:80px" />
+              </td>
               <td><span *ngIf="!editingCost">{{ order.actualTotalHours ?? '-' }}</span>
                   <input *ngIf="editingCost" [(ngModel)]="cost.actualTotalHours" type="number" style="width:80px" /></td>
               <td [class]="varianceClass(order.estimatedTotalHours, order.actualTotalHours)">
@@ -179,7 +189,10 @@ const ALL_STATUSES = ['DRAFT', 'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'
             </tr>
             <tr>
               <td>Kilometri</td>
-              <td>{{ order.estimatedKm ?? '-' }}</td>
+            <td>
+              <span *ngIf="!editingCost || !isOffice()">{{ order.estimatedKm ?? '-' }}</span>
+              <input *ngIf="editingCost && isOffice()" [(ngModel)]="cost.estimatedKm" type="number" style="width:80px" />
+            </td>
               <td><span *ngIf="!editingCost">{{ order.actualKm ?? '-' }}</span>
                   <input *ngIf="editingCost" [(ngModel)]="cost.actualKm" type="number" style="width:80px" /></td>
               <td [class]="varianceClass(order.estimatedKm, order.actualKm)">
@@ -187,7 +200,10 @@ const ALL_STATUSES = ['DRAFT', 'PENDING', 'IN_PROGRESS', 'RESOLVED', 'CANCELLED'
             </tr>
             <tr>
               <td>Materijal (EUR)</td>
-              <td>{{ order.estimatedMaterialCost ?? '-' }}</td>
+              <td>
+                <span *ngIf="!editingCost || !isOffice()">{{ order.estimatedMaterialCost ?? '-' }}</span>
+                <input *ngIf="editingCost && isOffice()" [(ngModel)]="cost.estimatedMaterialCost" type="number" style="width:80px" />
+              </td>
               <td><span *ngIf="!editingCost">{{ order.actualMaterialCost ?? '-' }}</span>
                   <input *ngIf="editingCost" [(ngModel)]="cost.actualMaterialCost" type="number" style="width:80px" /></td>
               <td [class]="varianceClass(order.estimatedMaterialCost, order.actualMaterialCost)">
